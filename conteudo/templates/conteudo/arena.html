@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Quiz Arena - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">DESAFIOS 1 CONTRA 1</p>
+    <h1>Quiz Arena</h1>
+    <p class="texto-suave">Convide um estudante da sua série. Cada pessoa responde às mesmas dez questões; o servidor compara os resultados quando ambos terminarem.</p>
+  </div>
+</section>
+
+<section class="cartao cartao-form">
+  <h2>Criar desafio</h2>
+  <p class="texto-suave">O convite vale por 48 horas. Esta versão não usa aposta nem concede XP por partidas.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button class="botao" type="submit">Criar convite</button>
+  </form>
+</section>
+
+<section class="secao-ranking">
+  <h2>Seus desafios</h2>
+  <div class="lista-assuntos-professor">
+    {% for desafio in desafios %}
+      <article class="cartao">
+        <p class="sobretitulo">{{ desafio.quiz.materia.nome }} · {{ desafio.get_status_display }}</p>
+        <h3>{{ desafio.quiz.titulo }}</h3>
+        <p class="texto-suave">Criado em {{ desafio.criado_em|date:"d/m/Y H:i" }} · convite até {{ desafio.expira_em|date:"d/m/Y H:i" }}</p>
+        <a class="botao botao-leve" href="{% url 'arena_desafio' desafio.convite %}">Abrir desafio</a>
+      </article>
+    {% empty %}
+      <p class="cartao estado-vazio">Você ainda não participou de desafios.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

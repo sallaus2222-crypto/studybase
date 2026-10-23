@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block titulo %}Desafio - Quiz Arena{% endblock %}
+{% block conteudo %}
+<p class="voltar"><a href="{% url 'arena' %}">&larr; Voltar ao Quiz Arena</a></p>
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">{{ desafio.quiz.materia.nome }} · {{ desafio.get_serie_display }}</p>
+    <h1>{{ desafio.quiz.titulo }}</h1>
+    <p class="texto-suave">{{ desafio.get_status_display }} · convite válido até {{ desafio.expira_em|date:"d/m/Y H:i" }}</p>
+  </div>
+</section>
+
+{% if erro %}<p class="cartao estado-vazio" role="alert">{{ erro }}</p>{% endif %}
+
+{% if desafio.status == "aberto" %}
+  {% if criou_desafio %}
+    <section class="cartao">
+      <h2>Convide um colega</h2>
+      <p>Envie este link a um estudante da mesma série. Ele só poderá ser aceito uma vez e expira após 48 horas.</p>
+      <label for="link-convite">Link do convite</label>
+      <input id="link-convite" type="url" readonly value="{{ convite_url }}">
+      <form method="post" action="{% url 'arena_cancelar' desafio.convite %}">
+        {% csrf_token %}
+        <button class="botao botao-perigo" type="submit">Cancelar convite</button>
+      </form>
+    </section>
+  {% else %}
+    <section class="cartao">
+      <h2>Convite para desafio</h2>
+      <p>Você e outro estudante da sua série responderão às mesmas dez questões. As respostas corretas e as pontuações ficam ocultas até ambos terminarem.</p>
+      <form method="post" action="{% url 'arena_aceitar' desafio.convite %}">
+        {% csrf_token %}
+        <button class="botao" type="submit">Aceitar desafio</button>
+      </form>
+    </section>
+  {% endif %}
+{% elif desafio.status == "em_andamento" and participante %}
+  {% if partida.finalizada_em %}
+    <section class="cartao">
+      <h2>Respostas registradas</h2>
+      <p>Você concluiu sua participação. O resultado será revelado quando os dois jogadores terminarem.</p>
+    </section>
+  {% else %}
+    <form method="post" class="form-desafio-pvp">
+      {% csrf_token %}
+      {% for pergunta in perguntas %}
+        <fieldset class="cartao questao-desafio">
+          <legend>{{ pergunta.ordem }}. {{ pergunta.enunciado }}</legend>
+          {% for codigo, texto in pergunta.alternativas %}
+            <label class="opcao-resposta">
+              <input type="radio" name="resposta_{{ pergunta.ordem }}" value="{{ codigo }}" required>
+              <span><strong>{{ codigo }}.</strong> {{ texto }}</span>
+            </label>
+          {% endfor %}
+        </fieldset>
+      {% endfor %}
+      <button class="botao" type="submit">Enviar minhas respostas</button>
+    </form>
+  {% endif %}
+{% elif desafio.status == "concluido" and participante %}
+  <section class="cartao ranking-resumo">
+    <h2>{{ resultado_pessoal }}</h2>
+    <p>Sua pontuação: <strong>{{ pontos_proprios }}/10</strong></p>
+    <p>Pontuação do adversário: <strong>{{ pontos_adversario }}/10</strong></p>
+    <p class="texto-suave">Desempate: mesma quantidade de respostas corretas resulta em empate. Nenhum XP é apostado ou concedido.</p>
+  </section>
+{% elif desafio.status == "expirado" %}
+  <section class="cartao estado-vazio"><p>O prazo deste desafio terminou. Nenhuma pontuação foi registrada como resultado final.</p></section>
+{% elif desafio.status == "cancelado" %}
+  <section class="cartao estado-vazio"><p>O criador cancelou este convite.</p></section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block titulo %}Missões - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">DESAFIOS DE ESTUDO</p>
+    <h1>Missões</h1>
+    <p class="texto-suave">Acompanhe metas de quizzes definidas pela equipe StudyVerse.</p>
+  </div>
+</section>
+
+<section class="grade-missoes" aria-label="Missões disponíveis e histórico">
+  {% for item in missoes %}
+    <article class="cartao cartao-missao{% if item.concluida %} missao-concluida{% endif %}">
+      <div class="missao-cabecalho">
+        <h2>{{ item.missao.nome }}</h2>
+        {% if item.status == "concluida" %}
+          <span class="etiqueta-status publicado">Concluída</span>
+        {% elif item.status == "encerrada" %}
+          <span class="etiqueta-status rascunho">Encerrada</span>
+        {% elif item.status == "em_breve" %}
+          <span class="etiqueta-status rascunho">Em breve</span>
+        {% elif item.status == "em_andamento" %}
+          <span class="etiqueta-status publicado">Em andamento</span>
+        {% else %}
+          <span class="etiqueta-status rascunho">Disponível</span>
+        {% endif %}
+      </div>
+      {% if item.missao.descricao %}<p class="texto-suave">{{ item.missao.descricao }}</p>{% endif %}
+      <p class="missao-criterio">
+        {% if item.missao.criterio == "quizzes_concluidos" %}
+          Conclua {{ item.missao.meta }} quiz(es)
+        {% else %}
+          Conclua {{ item.missao.meta }} quiz(es) com 100% de acerto
+        {% endif %}
+      </p>
+      {% if item.status != "em_breve" %}
+        <progress max="100" value="{{ item.percentual }}" aria-label="{{ item.percentual }}% concluído">{{ item.percentual }}%</progress>
+        <small>{{ item.progresso }} / {{ item.missao.meta }}</small>
+      {% endif %}
+      {% if item.missao.recompensa_xp %}<p class="missao-recompensa">Recompensa: {{ item.missao.recompensa_xp }} XP</p>{% endif %}
+      {% if item.missao.fim %}<small>Encerra em {{ item.missao.fim|date:"d/m/Y H:i" }}</small>{% endif %}
+    </article>
+  {% empty %}
+    <p class="cartao estado-vazio">Ainda não há missões ativas. Elas aparecerão aqui quando forem configuradas.</p>
+  {% endfor %}
+</section>
+{% endblock %}

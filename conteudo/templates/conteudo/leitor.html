@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}{{ assunto.titulo }} - Leitor StudyVerse{% endblock %}
+{% block conteudo %}
+<p class="voltar"><a href="{% url 'materia' assunto.materia_id %}?serie={{ assunto.serie }}">&larr; Voltar à matéria</a></p>
+<header class="leitor-cabecalho">
+  <div>
+    <p class="sobretitulo">{{ assunto.materia.nome }} · {{ assunto.get_serie_display }}</p>
+    <h1>{{ assunto.titulo }}</h1>
+    {% if assunto.resumo %}<p class="texto-suave">{{ assunto.resumo }}</p>{% endif %}
+  </div>
+  {% if assunto.fonte_referencia %}<p class="leitor-fonte">Fonte: {{ assunto.fonte_referencia }}</p>{% endif %}
+  {% if assunto.arquivo %}<a class="botao" href="{% url 'baixar_material' assunto.id %}">Baixar material complementar (PDF)</a>{% endif %}
+</header>
+
+{% if assunto.objetivos_aprendizagem %}
+<section class="leitor-objetivos">
+  <strong>O que você vai aprender</strong>
+  <p>{{ assunto.objetivos_aprendizagem|linebreaksbr }}</p>
+</section>
+{% endif %}
+
+<div class="leitor-layout">
+  <article class="leitor-texto" aria-label="Texto do material">
+    {% for secao in secoes %}
+      <section class="leitor-secao" id="trecho-{{ secao.id }}" data-trecho-id="{{ secao.id }}">
+        <p>{{ secao.texto|linebreaksbr }}</p>
+        {% for marcacao in marcacoes %}{% if marcacao.trecho_id == secao.id %}
+          <span class="destaque-salvo" data-texto="{{ marcacao.trecho_texto }}" data-cor="{{ marcacao.cor }}" hidden></span>
+        {% endif %}{% endfor %}
+      </section>
+    {% empty %}
+      <p class="estado-vazio">{% if assunto.arquivo %}Este material está disponível no arquivo PDF complementar.{% else %}Este material ainda não tem texto completo. O professor pode adicioná-lo pelo painel.{% endif %}</p>
+    {% endfor %}
+    {% if assunto.palavras_chave %}<p class="leitor-palavras"><strong>Palavras-chave:</strong> {{ assunto.palavras_chave }}</p>{% endif %}
+  </article>
+
+  <aside class="leitor-lateral" aria-label="Suas marcações neste material">
+    <section class="cartao formulario-marcacao">
+      <p class="sobretitulo">FERRAMENTAS DE ESTUDO</p>
+      <h2>{% if marcacao_editando %}Editar marcação{% else %}Marcar um trecho{% endif %}</h2>
+      <p class="texto-suave">Selecione uma frase no texto. Depois escolha uma cor e, se quiser, adicione uma etiqueta ou anotação.</p>
+      <form method="post" action="{% if marcacao_editando %}{% url 'marcacao_editar' assunto.id marcacao_editando.id %}{% else %}{% url 'marcacao_nova' assunto.id %}{% endif %}" id="form-marcacao">
+        {% csrf_token %}
+        {{ form.trecho_id }}
+        {{ form.trecho_texto }}
+        {{ form.trecho_texto.errors }}
+        <p class="trecho-selecionado" id="trecho-selecionado" aria-live="polite">{% if form.instance.trecho_texto %}{{ form.instance.trecho_texto }}{% else %}Nenhum trecho selecionado ainda.{% endif %}</p>
+        <div class="campo-marcacao">
+          <fieldset class="seletor-cores">
+            <legend>Cor do destaque</legend>
+            <div class="opcoes-cores" role="radiogroup" aria-label="Escolha uma cor para o destaque">
+              {% for valor, rotulo in form.cor.field.choices %}
+                <label class="opcao-cor">
+                  <input type="radio" name="{{ form.cor.html_name }}" value="{{ valor }}" aria-label="{{ rotulo }}" title="{{ rotulo }}"{% if form.cor.value == valor %} checked{% endif %} required>
+                  <span class="amostra-cor amostra-cor-{{ valor }}"{% if valor == 'amarelo' %} style="background-color: #f5c842"{% elif valor == 'azul' %} style="background-color: #38bdf8"{% elif valor == 'verde' %} style="background-color: #4ade80"{% elif valor == 'rosa' %} style="background-color: #f472b6"{% elif valor == 'laranja' %} style="background-color: #fb923c"{% elif valor == 'roxo' %} style="background-color: #a78bfa"{% elif valor == 'vermelho' %} style="background-color: #f87171"{% elif valor == 'turquesa' %} style="background-color: #2dd4bf"{% endif %} aria-hidden="true" title="{{ rotulo }}"></span>
+                </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {{ form.cor.errors }}
+        </div>
+        <div class="campo-marcacao">
+          <label for="{{ form.etiqueta.id_for_label }}">Etiqueta <span>(opcional)</span></label>
+          {{ form.etiqueta }}
+          {{ form.etiqueta.errors }}
+        </div>
+        <div class="campo-marcacao">
+          <label for="{{ form.anotacao.id_for_label }}">Sua anotação <span>(opcional)</span></label>
+          {{ form.anotacao }}
+          {{ form.anotacao.errors }}
+        </div>
+        <div class="acoes-formulario">
+          <button class="botao" type="submit" id="salvar-marcacao"{% if not form.instance.trecho_texto %} disabled{% endif %}>{% if marcacao_editando %}Salvar alteração{% else %}Salvar marcação{% endif %}</button>
+          {% if marcacao_editando %}<a class="botao botao-leve" href="{% url 'leitor' assunto.id %}">Cancelar</a>{% endif %}
+        </div>
+      </form>
+    </section>
+
+    <section class="cartao lista-marcacoes">
+      <h2>Minhas marcações <span>{{ marcacoes|length }}</span></h2>
+      {% for marcacao in marcacoes %}
+        <article class="marcacao-salva" id="marcacao-{{ marcacao.id }}">
+          <a class="marcacao-trecho cor-{{ marcacao.cor }}" href="#trecho-{{ marcacao.trecho_id }}">“{{ marcacao.trecho_texto }}”</a>
+          {% if marcacao.etiqueta %}<span class="marcacao-etiqueta">{{ marcacao.etiqueta }}</span>{% endif %}
+          {% if marcacao.anotacao %}<p>{{ marcacao.anotacao }}</p>{% endif %}
+          <div class="marcacao-acoes">
+            <a href="{% url 'marcacao_editar' assunto.id marcacao.id %}">Editar</a>
+            <form method="post" action="{% url 'marcacao_excluir' assunto.id marcacao.id %}">
+              {% csrf_token %}<button type="submit">Excluir</button>
+            </form>
+          </div>
+        </article>
+      {% empty %}
+        <p class="texto-suave">As frases que você marcar neste material aparecerão aqui e ficarão visíveis só para você.</p>
+      {% endfor %}
+    </section>
+  </aside>
+</div>
+
+<section class="cartao comentarios-material" aria-labelledby="comentarios-titulo">
+  <div class="comentarios-cabecalho">
+    <div>
+      <p class="sobretitulo">APRENDAM JUNTOS</p>
+      <h2 id="comentarios-titulo">Dúvidas e comentários</h2>
+      <p class="texto-suave">Pergunte sobre este material ou ajude outro estudante.</p>
+    </div>
+  </div>
+  <form class="form-comentario" method="post" action="{% url 'comentario_material_novo' assunto.id %}">
+    {% csrf_token %}
+    {{ form_comentario.non_field_errors }}
+    <label for="{{ form_comentario.texto.id_for_label }}">{{ form_comentario.texto.label }}</label>
+    {{ form_comentario.texto }}
+    {{ form_comentario.texto.errors }}
+    <button class="botao" type="submit">Publicar comentário</button>
+  </form>
+  <div class="lista-comentarios">
+    {% for comentario in comentarios %}
+      <article class="comentario" id="comentario-{{ comentario.id }}" tabindex="-1">
+        <header><strong>{{ comentario.autor.perfil_aluno.nome_exibicao|default:comentario.autor.username }}</strong><span>{% if comentario.autor.papel == 'professor' %}Professor{% elif comentario.autor.papel == 'admin' %}Administração{% else %}Estudante{% endif %} · <time datetime="{{ comentario.criado_em|date:'c' }}">{{ comentario.criado_em|date:"d/m/Y H:i" }}</time></span></header>
+        <p>{{ comentario.texto|linebreaksbr }}</p>
+        <details class="responder-comentario">
+          <summary>Responder</summary>
+          <form method="post" action="{% url 'comentario_material_responder' assunto.id comentario.id %}">
+            {% csrf_token %}
+            <label for="resposta-texto-{{ comentario.id }}">Sua resposta</label>
+            <textarea id="resposta-texto-{{ comentario.id }}" name="texto" rows="3" maxlength="4000" required placeholder="Escreva sua resposta..."></textarea>
+            <button class="botao botao-leve" type="submit">Enviar resposta</button>
+          </form>
+        </details>
+        {% for resposta in comentario.respostas.all %}
+          <article class="comentario resposta-comentario" id="comentario-{{ resposta.id }}" tabindex="-1">
+            <header><strong>{{ resposta.autor.perfil_aluno.nome_exibicao|default:resposta.autor.username }}</strong><span>{% if resposta.autor.papel == 'professor' %}Professor{% elif resposta.autor.papel == 'admin' %}Administração{% else %}Estudante{% endif %} · <time datetime="{{ resposta.criado_em|date:'c' }}">{{ resposta.criado_em|date:"d/m/Y H:i" }}</time></span></header>
+            <p>{{ resposta.texto|linebreaksbr }}</p>
+          </article>
+        {% endfor %}
+      </article>
+    {% empty %}
+      <p class="texto-suave">Ainda não há comentários. Você pode iniciar a conversa.</p>
+    {% endfor %}
+  </div>
+</section>
+<script src="{% static 'conteudo/js/leitor.js' %}" defer></script>
+{% endblock %}

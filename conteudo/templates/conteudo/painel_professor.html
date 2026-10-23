@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block titulo %}Painel do professor - StudyVerse{% endblock %}
+{% block conteudo %}
+<h1>Painel do professor</h1>
+<p class="acoes-painel-professor"><a class="botao" href="{% url 'assunto_novo' %}">Novo assunto</a> <a class="botao" href="{% url 'quiz_novo' %}">Novo quiz</a> <a class="botao botao-leve" href="{% url 'evento_calendario_novo' %}">Adicionar atividade ao calendário</a></p>
+
+<section class="cartao">
+  <h2>Perguntas aguardando moderação</h2>
+  {% for pergunta in perguntas_pendentes %}
+    <article class="item-moderacao">
+      <h3>{{ pergunta.titulo }}</h3>
+      <p><strong>{{ pergunta.materia }}</strong> · {{ pergunta.get_serie_display }} · {{ pergunta.autor.username }}</p>
+      <p>{{ pergunta.texto|linebreaksbr }}</p>
+      <form method="post" action="{% url 'pergunta_moderar' pergunta.id %}" class="acoes-formulario">
+        {% csrf_token %}
+        <button class="botao" type="submit" name="acao" value="aprovar">Aprovar e publicar</button>
+        <button class="botao botao-leve" type="submit" name="acao" value="rejeitar">Rejeitar</button>
+      </form>
+    </article>
+  {% empty %}
+    <p class="texto-suave">Nenhuma pergunta aguardando moderação.</p>
+  {% endfor %}
+</section>
+
+<section class="cartao">
+  <h2>Respostas aguardando moderação</h2>
+  {% for resposta in respostas_pendentes %}
+    <article class="item-moderacao">
+      <h3>Resposta para: {{ resposta.pergunta.titulo }}</h3>
+      <p><strong>{{ resposta.pergunta.materia }}</strong> · {{ resposta.pergunta.get_serie_display }} · {{ resposta.autor.username }}</p>
+      <p>{{ resposta.texto|linebreaksbr }}</p>
+      <form method="post" action="{% url 'resposta_moderar' resposta.id %}" class="acoes-formulario">
+        {% csrf_token %}
+        <button class="botao" type="submit" name="acao" value="aprovar">Aprovar e publicar</button>
+        <button class="botao botao-leve" type="submit" name="acao" value="rejeitar">Rejeitar</button>
+      </form>
+    </article>
+  {% empty %}
+    <p class="texto-suave">Nenhuma resposta aguardando moderação.</p>
+  {% endfor %}
+</section>
+
+{% for a in assuntos %}
+<article class="cartao assunto" style="--cor-materia: {{ a.materia.cor }};">
+  <h2>{{ a.titulo }}</h2>
+  <p>{{ a.materia }} · {{ a.get_serie_display }} · {% if a.publicado %}{% if a.publicar_em and a.publicar_em > agora %}Programado para {{ a.publicar_em|date:"d/m/Y H:i" }}{% else %}Publicado{% endif %}{% else %}Rascunho{% endif %}</p>
+  <a href="{% url 'assunto_editar' a.id %}">Editar</a>
+</article>
+{% empty %}
+<p class="cartao">Você ainda não cadastrou nenhum assunto.</p>
+{% endfor %}
+
+<section class="grade-quizzes" aria-label="Quizzes do professor">
+  {% for quiz in quizzes %}
+    <article class="cartao cartao-quiz">
+      <p class="sobretitulo">{{ quiz.materia }} · {{ quiz.get_serie_display|default:"Todas as séries" }}</p>
+      <h2>{{ quiz.titulo }}</h2>
+      <p>{% if quiz.publicado %}{% if quiz.publicar_em and quiz.publicar_em > agora %}Programado para {{ quiz.publicar_em|date:"d/m/Y H:i" }}{% else %}Publicado{% endif %}{% else %}Rascunho{% endif %} · {{ quiz.total_questoes }} questões · {{ quiz.total_tentativas }} tentativas</p>
+      <a href="{% url 'quiz_editar' quiz.id %}">Editar quiz</a>
+    </article>
+  {% empty %}
+    <p class="cartao">Você ainda não criou quizzes.</p>
+  {% endfor %}
+</section>
+{% endblock %}

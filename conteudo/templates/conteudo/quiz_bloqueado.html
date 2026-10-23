@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Edição bloqueada - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="cartao estado-vazio">
+  <p class="sobretitulo">ÁREA DO PROFESSOR</p>
+  <h1>Este quiz já tem tentativas</h1>
+  <p>Para manter os resultados e as respostas anteriores consistentes, não é possível editar questões ou alternativas depois que um aluno responde.</p>
+  <p><strong>{{ quiz.titulo }}</strong></p>
+  <a class="botao" href="{% url 'painel_professor' %}">Voltar ao painel</a>
+</section>
+{% endblock %}

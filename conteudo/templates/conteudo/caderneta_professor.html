@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block titulo %}Caderneta - StudyVerse{% endblock %}
+{% block conteudo %}
+<p class="voltar"><a href="{% url 'painel_professor' %}">&larr; Painel do professor</a></p>
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">ACOMPANHAMENTO PEDAGÓGICO</p>
+    <h1>Caderneta</h1>
+    <p class="texto-suave">Acompanhe os resultados dos alunos nos quizzes que você criou.</p>
+    <a class="botao" href="{% url 'nota_avaliacao_nova' %}">Lançar nota de avaliação</a>
+  </div>
+</section>
+
+<form method="get" class="cartao filtros-caderneta" aria-label="Filtrar desempenho">
+  <div>
+    <label for="filtro-quiz">Quiz</label>
+    <select id="filtro-quiz" name="quiz">
+      <option value="">Todos os seus quizzes</option>
+      {% for quiz in quizzes %}
+        <option value="{{ quiz.pk }}" {% if quiz_id == quiz.pk|stringformat:"s" %}selected{% endif %}>{{ quiz.titulo }} · {{ quiz.materia.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="filtro-serie">Série</label>
+    <select id="filtro-serie" name="serie">
+      <option value="">Todas as séries</option>
+      {% for codigo, nome in series %}
+        <option value="{{ codigo }}" {% if serie_atual == codigo %}selected{% endif %}>{{ nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="botao" type="submit">Aplicar filtros</button>
+</form>
+
+<section class="secao-ranking" aria-labelledby="alunos-titulo">
+  <h2 id="alunos-titulo" class="titulo-secao">Desempenho por aluno</h2>
+  <div class="tabela-caderneta">
+    <table>
+      <thead>
+        <tr><th>Aluno</th><th>Série</th><th>Quizzes</th><th>Tentativas</th><th>Média</th><th>Última atividade</th></tr>
+      </thead>
+      <tbody>
+        {% for aluno in alunos %}
+          <tr>
+            <th scope="row">{{ aluno.perfil_aluno.nome_exibicao|default:aluno.username }}</th>
+            <td>{{ aluno.perfil_aluno.get_serie_display|default:"—" }}</td>
+            <td>{{ aluno.quizzes_concluidos }}</td>
+            <td>{{ aluno.total_tentativas }}</td>
+            <td>{{ aluno.media_percentual|floatformat:0 }}%</td>
+            <td>{{ aluno.ultima_atividade|date:"d/m/Y H:i" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">Ainda não há tentativas nos seus quizzes com estes filtros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="secao-ranking" aria-labelledby="notas-titulo">
+  <div class="cabecalho-secao">
+    <h2 id="notas-titulo" class="titulo-secao">Notas de avaliações</h2>
+    <a class="botao botao-leve" href="{% url 'nota_avaliacao_nova' %}">Nova avaliação</a>
+  </div>
+  <div class="lista-assuntos-professor">
+    {% for nota in notas_avaliacao %}
+      <article class="cartao item-assunto-professor">
+        <div>
+          <p class="sobretitulo">{{ nota.aluno.perfil_aluno.get_serie_display }} · {{ nota.materia.nome }} · {{ nota.get_tipo_display }}</p>
+          <h3>{{ nota.titulo }}</h3>
+          <p><strong>{{ nota.aluno.perfil_aluno.nome_exibicao|default:nota.aluno.username }}</strong> · {{ nota.nota|floatformat:"-2" }}/{{ nota.nota_maxima|floatformat:"-2" }} · {{ nota.data_avaliacao|date:"d/m/Y" }}</p>
+          {% if nota.observacoes %}<p class="texto-suave">{{ nota.observacoes }}</p>{% endif %}
+        </div>
+        <div class="acoes-formulario">
+          <a class="botao botao-leve" href="{% url 'nota_avaliacao_editar' nota.pk %}">Editar</a>
+          <form method="post" action="{% url 'nota_avaliacao_excluir' nota.pk %}" onsubmit="return confirm('Excluir esta nota?');">
+            {% csrf_token %}
+            <button class="botao botao-perigo" type="submit">Excluir</button>
+          </form>
+        </div>
+      </article>
+    {% empty %}
+      <p class="cartao estado-vazio">Você ainda não lançou notas. Use “Lançar nota de avaliação” para começar.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="secao-ranking" aria-labelledby="tentativas-titulo">
+  <h2 id="tentativas-titulo" class="titulo-secao">Tentativas recentes</h2>
+  <div class="lista-assuntos-professor">
+    {% for tentativa in tentativas_recentes %}
+      <article class="cartao item-assunto-professor">
+        <div>
+          <p class="sobretitulo">{{ tentativa.usuario.perfil_aluno.get_serie_display|default:"Aluno" }} · {{ tentativa.quiz.materia.nome }}</p>
+          <h3>{{ tentativa.usuario.perfil_aluno.nome_exibicao|default:tentativa.usuario.username }}</h3>
+          <p>{{ tentativa.quiz.titulo }} · {{ tentativa.acertos }}/{{ tentativa.total_questoes }} acertos ({{ tentativa.percentual }}%)</p>
+        </div>
+        <small class="texto-suave">{{ tentativa.finalizada_em|date:"d/m/Y H:i" }}</small>
+      </article>
+    {% empty %}
+      <p class="cartao estado-vazio">As tentativas dos alunos aparecerão aqui.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

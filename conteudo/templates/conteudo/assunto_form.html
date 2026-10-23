@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titulo %}Assunto - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="cartao cartao-form">
+  <h1>{% if assunto %}Editar assunto{% else %}Novo assunto{% endif %}</h1>
+  <p class="aviso">Para agendar, marque a publicação e escolha uma data futura. O material ficará disponível automaticamente no horário escolhido.</p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button class="botao" type="submit">Salvar</button>
+  </form>
+  <p class="rodape-form"><a href="{% url 'painel_professor' %}">Voltar ao painel</a></p>
+</section>
+{% endblock %}

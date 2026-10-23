@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block titulo %}Calendário de atividades - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">ORGANIZE SEUS ESTUDOS</p>
+    <h1>Calendário de atividades</h1>
+    <p class="texto-suave">Provas, trabalhos e prazos da sua série.</p>
+  </div>
+  {% if pode_gerenciar %}<a class="botao" href="{% url 'evento_calendario_novo' %}">Adicionar atividade</a>{% endif %}
+</section>
+
+<section class="cartao calendario" aria-label="Calendário mensal">
+  <div class="calendario-controles">
+    <a class="botao botao-leve" href="?mes={{ mes_anterior.month }}&ano={{ mes_anterior.year }}" aria-label="Mês anterior">‹ Anterior</a>
+    <h2>{{ mes_nome|capfirst }} de {{ ano }}</h2>
+    <a class="botao botao-leve" href="?mes={{ proximo_mes.month }}&ano={{ proximo_mes.year }}" aria-label="Próximo mês">Próximo ›</a>
+  </div>
+  <table class="calendario-grade">
+    <caption class="somente-leitor">{{ mes_nome|capfirst }} de {{ ano }}</caption>
+    <thead><tr>
+      <th scope="col">Segunda</th><th scope="col">Terça</th><th scope="col">Quarta</th>
+      <th scope="col">Quinta</th><th scope="col">Sexta</th><th scope="col">Sábado</th><th scope="col">Domingo</th>
+    </tr></thead>
+    <tbody>
+      {% for semana in semanas %}<tr>
+        {% for dia in semana %}
+          <td class="calendario-celula{% if dia.fora_do_mes %} fora-do-mes{% endif %}{% if dia.data == hoje %} dia-hoje{% endif %}">
+            <time datetime="{{ dia.data|date:'Y-m-d' }}" aria-label="{{ dia.data|date:'d/m/Y' }}">{{ dia.data.day }}</time>
+            {% for evento in dia.eventos %}
+              {% if pode_gerenciar %}
+                <a class="evento-calendario evento-{{ evento.tipo }}" href="{% url 'evento_calendario_editar' evento.id %}" title="{{ evento.get_tipo_display }}: {{ evento.titulo }}">{{ evento.titulo }}</a>
+              {% else %}
+                <span class="evento-calendario evento-{{ evento.tipo }}" title="{{ evento.get_tipo_display }}: {{ evento.titulo }}">{{ evento.titulo }}</span>
+              {% endif %}
+            {% endfor %}
+          </td>
+        {% endfor %}
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="cartao calendario-lista" aria-labelledby="atividades-mes">
+  <h2 id="atividades-mes">Atividades deste mês</h2>
+  {% for evento in eventos_mes %}
+    <article class="evento-lista">
+      <time datetime="{{ evento.data|date:'Y-m-d' }}">{{ evento.data|date:"d/m/Y" }}</time>
+      <div><strong>{{ evento.titulo }}</strong><p>{{ evento.get_tipo_display }} · {{ evento.materia }} · {{ evento.get_serie_display }}</p>{% if evento.descricao %}<p>{{ evento.descricao|linebreaksbr }}</p>{% endif %}</div>
+      {% if pode_gerenciar %}<a href="{% url 'evento_calendario_editar' evento.id %}">Editar</a>{% endif %}
+    </article>
+  {% empty %}
+    <p class="texto-suave">Nenhuma atividade cadastrada neste mês.</p>
+  {% endfor %}
+</section>
+{% endblock %}

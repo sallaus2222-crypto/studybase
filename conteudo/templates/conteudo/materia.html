@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block titulo %}{{ materia.nome }} - StudyVerse{% endblock %}
+{% block conteudo %}
+<p class="voltar"><a href="{% url 'materias' %}">&larr; Todas as matérias</a></p>
+<section class="pagina-cabecalho cabecalho-materia">
+  <div>
+    <p class="sobretitulo">BIBLIOTECA STUDYVERSE</p>
+    <h1>{{ materia.nome }}</h1>
+    <p class="texto-suave">{{ materia.descricao }}</p>
+  </div>
+</section>
+
+<nav class="abas">
+  {% for codigo, nome in series %}
+  <a href="?serie={{ codigo }}" class="aba{% if codigo == serie_atual %} ativa{% endif %}">{{ nome }}</a>
+  {% endfor %}
+</nav>
+
+<form method="get" class="filtros-biblioteca" role="search">
+  <input type="hidden" name="serie" value="{{ serie_atual }}">
+  <div>
+    <label for="busca-conteudo">Buscar conteúdo</label>
+    <input id="busca-conteudo" type="search" name="q" value="{{ termo }}" placeholder="Título, resumo ou palavra-chave">
+  </div>
+  <div>
+    <label for="tipo-material">Tipo de material</label>
+    <select id="tipo-material" name="tipo">
+      <option value="">Todos os tipos</option>
+      {% for codigo, nome in tipos_materiais %}
+      <option value="{{ codigo }}"{% if codigo == tipo_material_atual %} selected{% endif %}>{{ nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="botao" type="submit">Filtrar</button>
+  {% if termo or tipo_material_atual %}
+  <a class="botao botao-leve" href="?serie={{ serie_atual }}">Limpar filtros</a>
+  {% endif %}
+</form>
+
+{% for a in assuntos %}
+<article class="cartao assunto" style="--cor-materia: {{ materia.cor }};">
+  <p class="sobretitulo">{{ a.get_tipo_material_display }} · {{ a.get_dificuldade_display }}</p>
+  <h2>{{ a.titulo }}</h2>
+  <p>{{ a.resumo|linebreaksbr }}</p>
+  {% if a.objetivos_aprendizagem %}
+  <p><strong>Objetivos de aprendizagem:</strong> {{ a.objetivos_aprendizagem|linebreaksbr }}</p>
+  {% endif %}
+  {% if a.palavras_chave %}<p><strong>Palavras-chave:</strong> {{ a.palavras_chave }}</p>{% endif %}
+  {% if a.fonte_referencia %}<p class="texto-suave"><strong>Fonte:</strong> {{ a.fonte_referencia }}</p>{% endif %}
+  {% if a.conteudo_completo or a.arquivo %}<a class="botao botao-leve" href="{% url 'leitor' a.id %}">Abrir material</a>{% endif %}
+</article>
+{% empty %}
+<p class="cartao">Ainda não há assuntos publicados para esta série.</p>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Matérias - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">BIBLIOTECA STUDYVERSE</p>
+    <h1>Matérias</h1>
+    <p class="texto-suave">Escolha uma matéria para explorar os assuntos e materiais disponíveis.</p>
+  </div>
+</section>
+{% if materias %}
+<div class="grade">
+  {% for m in materias %}
+  <article class="cartao materia" style="--cor-materia: {{ m.cor }};">
+        <h2><a href="{% url 'materia' m.id %}">{{ m.nome }}</a></h2>
+    <p>{{ m.descricao }}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="cartao">Ainda não há matérias cadastradas.</p>
+{% endif %}
+{% endblock %}

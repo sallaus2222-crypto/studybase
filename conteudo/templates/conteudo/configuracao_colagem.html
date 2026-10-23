@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}Configuração de colagem - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">CONFIGURAÇÕES DE PARTICIPAÇÃO</p>
+    <h1>Bloqueio de colagem</h1>
+    <p class="texto-suave">Escolha se os alunos podem colar texto nos campos de perguntas e respostas.</p>
+  </div>
+</section>
+
+<section class="cartao cartao-form">
+  {% if bloqueio_ativo %}
+    <p class="etiqueta-status publicado">Bloqueio ativo para os alunos</p>
+  {% else %}
+    <p class="etiqueta-status rascunho">Colagem liberada</p>
+  {% endif %}
+  <p class="texto-suave">O bloqueio geral fica ativo quando o professor ou o administrador o habilita. Para liberar a colagem, os dois controles precisam estar desligados.</p>
+  <ul class="texto-suave">
+    <li>Controle do professor: {% if bloqueio_professor_ativo %}ativo{% else %}desativado{% endif %}</li>
+    <li>Controle do administrador: {% if bloqueio_admin_ativo %}ativo{% else %}desativado{% endif %}</li>
+  </ul>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <div class="acoes-formulario">
+      <button class="botao" type="submit">Salvar configuração</button>
+    </div>
+  </form>
+  <p class="aviso-integridade">Esta medida dificulta colar diretamente, mas pode ser contornada pelo navegador e não detecta plágio.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}{% if nota %}Editar nota{% else %}Lançar nota{% endif %} - StudyVerse{% endblock %}
+{% block conteudo %}
+<p class="voltar"><a href="{% url 'caderneta_professor' %}">&larr; Voltar à caderneta</a></p>
+<section class="cartao cartao-form">
+  <p class="sobretitulo">ÁREA DO PROFESSOR</p>
+  <h1>{% if nota %}Editar avaliação{% else %}Lançar nota de avaliação{% endif %}</h1>
+  <p class="texto-suave">Registre a nota, o tipo de avaliação e a pontuação máxima. O aluno verá este registro na própria página de notas.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <div class="acoes-formulario">
+      <button class="botao" type="submit">{% if nota %}Salvar alterações{% else %}Lançar nota{% endif %}</button>
+      <a class="botao botao-leve" href="{% url 'caderneta_professor' %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

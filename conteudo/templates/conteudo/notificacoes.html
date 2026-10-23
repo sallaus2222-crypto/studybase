@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block titulo %}NotificaÃ§Ãµes - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">NOVIDADES DE ESTUDO</p>
+    <h1>NotificaÃ§Ãµes</h1>
+    <p class="texto-suave">Avisos sobre novas matÃ©rias, materiais e quizzes publicados pelos professores.</p>
+  </div>
+</section>
+
+<section class="lista-notificacoes" aria-label="Suas notificaÃ§Ãµes">
+  {% for notificacao in notificacoes %}
+    <a class="cartao notificacao{% if not notificacao.lida_em %} notificacao-nao-lida{% endif %}" href="{% url 'notificacao_abrir' notificacao.id %}">
+      <span class="notificacao-tipo">{{ notificacao.get_tipo_display }}</span>
+      <h2>{{ notificacao.titulo }}</h2>
+      <p>{{ notificacao.mensagem }}</p>
+      <time datetime="{{ notificacao.criada_em|date:'c' }}">{{ notificacao.criada_em|date:"d/m/Y H:i" }}</time>
+      {% if not notificacao.lida_em %}<span class="notificacao-status">Nova</span>{% endif %}
+    </a>
+  {% empty %}
+    <p class="cartao estado-vazio">VocÃª ainda nÃ£o tem notificaÃ§Ãµes. Quando um professor publicar uma novidade, ela aparecerÃ¡ aqui.</p>
+  {% endfor %}
+</section>
+{% endblock %}

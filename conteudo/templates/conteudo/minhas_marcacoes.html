@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Minhas marcações - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">SUA BIBLIOTECA PESSOAL</p>
+    <h1>Minhas marcações</h1>
+    <p class="texto-suave">Trechos e anotações que você salvou durante seus estudos.</p>
+  </div>
+</section>
+<div class="grade-marcacoes">
+  {% for marcacao in marcacoes %}
+    <article class="cartao marcacao-global">
+      <p class="sobretitulo">{{ marcacao.assunto.materia.nome }} · {{ marcacao.assunto.get_serie_display }}</p>
+      <h2>{{ marcacao.assunto.titulo }}</h2>
+      <blockquote class="marcacao-trecho cor-{{ marcacao.cor }}">“{{ marcacao.trecho_texto }}”</blockquote>
+      {% if marcacao.etiqueta %}<span class="marcacao-etiqueta">{{ marcacao.etiqueta }}</span>{% endif %}
+      {% if marcacao.anotacao %}<p>{{ marcacao.anotacao }}</p>{% endif %}
+      <a class="link-acao" href="{% url 'leitor' marcacao.assunto_id %}#trecho-{{ marcacao.trecho_id }}">Voltar ao trecho</a>
+    </article>
+  {% empty %}
+    <div class="cartao estado-vazio">
+      <h2>Ainda não há marcações</h2>
+      <p>Abra um material no leitor e selecione uma frase para guardar.</p>
+      <a class="botao" href="{% url 'materias' %}">Explorar matérias</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

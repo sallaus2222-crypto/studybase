@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block titulo %}{{ pergunta.titulo }} - StudyVerse{% endblock %}
+{% block conteudo %}
+<p class="voltar"><a href="{% url 'perguntas' %}">&larr; Voltar às perguntas</a></p>
+<article class="cartao">
+  <p class="sobretitulo">{{ pergunta.materia.nome }} · {{ pergunta.get_serie_display }}</p>
+  <h1>{{ pergunta.titulo }}</h1>
+  <p>{{ pergunta.texto|linebreaksbr }}</p>
+  {% if pergunta.autor_id == user.id and pergunta.status != "aprovada" %}
+    <span class="etiqueta-status rascunho">{{ pergunta.get_status_display }}</span>
+    <p class="texto-suave">Somente você e os professores podem ver esta pergunta até a aprovação.</p>
+  {% endif %}
+</article>
+
+<section class="secao-ranking">
+  <h2>Respostas</h2>
+  {% for resposta in respostas %}
+    <article class="cartao">
+      <p>{{ resposta.texto|linebreaksbr }}</p>
+      {% if resposta.autor_id == user.id and resposta.status != "aprovada" %}
+        <span class="etiqueta-status rascunho">{{ resposta.get_status_display }} · visível só para você e professores</span>
+      {% endif %}
+    </article>
+  {% empty %}
+    <p class="cartao estado-vazio">Ainda não há respostas aprovadas.</p>
+  {% endfor %}
+</section>
+
+{% if pergunta.status == "aprovada" and pergunta.autor_id != user.id %}
+  <section class="cartao cartao-form">
+    <h2>Escreva uma resposta</h2>
+    <p class="texto-suave">Sua resposta ficará privada até que um professor a aprove. Não compartilhe informações pessoais.</p>
+    <form method="post"{% if bloquear_colagem %} data-bloquear-colagem="true"{% endif %}>
+      {% csrf_token %}
+      {{ form.as_div }}
+      {% if bloquear_colagem %}<p class="texto-suave mensagem-bloqueio-colagem" role="status" aria-live="polite" hidden>Colar texto está desativado por uma configuração da escola.</p>{% endif %}
+      <button class="botao" type="submit">Enviar resposta para moderação</button>
+    </form>
+  </section>
+{% endif %}
+{% endblock %}

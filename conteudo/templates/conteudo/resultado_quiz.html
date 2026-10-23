@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}Resultado: {{ tentativa.quiz.titulo }} - StudyVerse{% endblock %}
+{% block conteudo %}
+<p class="voltar"><a href="{% url 'quizzes' %}">&larr; Todos os quizzes</a></p>
+<section class="resultado-resumo">
+  <p class="sobretitulo">QUIZ CONCLUÍDO · {{ tentativa.quiz.materia.nome }}</p>
+  <h1>{{ tentativa.quiz.titulo }}</h1>
+  <div class="resultado-pontuacao">
+    <strong>{{ tentativa.acertos }}<span>/{{ tentativa.total_questoes }}</span></strong>
+    <span>acertos · {{ tentativa.percentual }}%</span>
+  </div>
+  {% if xp_recebido %}<p class="quiz-xp-recebido">+{{ xp_recebido.xp }} XP adicionados à sua progressão.</p>{% endif %}
+  <a class="botao" href="{% url 'quizzes' %}">Voltar aos quizzes</a>
+</section>
+
+<section class="resultado-revisao" aria-labelledby="revisao-titulo">
+  <h2 id="revisao-titulo">Revisão das respostas</h2>
+  {% for item in resultado %}
+    <article class="cartao revisao-questao {% if item.acertou %}resposta-certa{% else %}resposta-errada{% endif %}">
+      <p class="sobretitulo">Questão {{ forloop.counter }} · {% if item.acertou %}Acertou{% else %}Precisa revisar{% endif %}</p>
+      <h3>{{ item.questao.enunciado }}</h3>
+      <ul class="revisao-alternativas">
+        {% for codigo, texto in item.alternativas %}
+          <li class="{% if codigo == item.correta %}alternativa-correta{% elif codigo == item.escolhida %}alternativa-escolhida{% endif %}">
+            <span>{{ codigo }}</span>{{ texto }}
+            {% if codigo == item.correta %}<strong>Resposta correta</strong>{% elif codigo == item.escolhida %}<strong>Sua resposta</strong>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% if item.questao.explicacao %}<p class="explicacao-questao"><strong>Explicação:</strong> {{ item.questao.explicacao|linebreaksbr }}</p>{% endif %}
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}

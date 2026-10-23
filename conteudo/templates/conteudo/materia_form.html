@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}Adicionar matéria - StudyVerse{% endblock %}
+{% block conteudo %}
+<p class="voltar"><a href="{% url 'painel_professor' %}">&larr; Painel do professor</a></p>
+<section class="cartao cartao-form">
+  <p class="sobretitulo">ÁREA DO PROFESSOR</p>
+  <h1>Adicionar matéria</h1>
+  <p class="texto-suave">A nova matéria ficará disponível para os materiais e quizzes dos professores.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <div class="acoes-formulario">
+      <button class="botao" type="submit">Salvar matéria</button>
+      <a class="botao botao-leve" href="{% url 'painel_professor' %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

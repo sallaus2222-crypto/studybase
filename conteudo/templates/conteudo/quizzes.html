@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block titulo %}Quizzes - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">PRATIQUE NO SEU RITMO</p>
+    <h1>Quizzes</h1>
+    <p class="texto-suave">Responda às questões e confira a correção com explicações ao final.</p>
+  </div>
+  <a class="botao botao-leve" href="{% url 'arena' %}">Desafiar um colega</a>
+</section>
+<form method="get" class="filtros-biblioteca" role="search" aria-label="Buscar quizzes">
+  <div>
+    <label for="busca-quiz">Buscar</label>
+    <input id="busca-quiz" type="search" name="q" value="{{ termo }}" placeholder="Título, descrição ou matéria">
+  </div>
+  <div>
+    <label for="materia-quiz">Matéria</label>
+    <select id="materia-quiz" name="materia">
+      <option value="">Todas as matérias</option>
+      {% for materia in materias %}
+        <option value="{{ materia.pk }}" {% if materia_atual == materia.pk|stringformat:"s" %}selected{% endif %}>{{ materia.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="botao" type="submit">Filtrar</button>
+  {% if termo or materia_atual %}<a class="botao botao-leve" href="{% url 'quizzes' %}">Limpar filtros</a>{% endif %}
+</form>
+<div class="grade-quizzes">
+  {% for quiz in quizzes %}
+    <article class="cartao cartao-quiz">
+      <p class="sobretitulo">{{ quiz.materia.nome }}{% if quiz.serie %} · {{ quiz.get_serie_display }}{% else %} · Todas as séries{% endif %}</p>
+      <h2>{{ quiz.titulo }}</h2>
+      {% if quiz.tentativas_aluno %}
+        <p class="progresso-quiz-aluno">{{ quiz.tentativas_aluno }} tentativa(s) · melhor resultado: {{ quiz.melhor_percentual|floatformat:0 }}%</p>
+      {% else %}
+        <p class="progresso-quiz-aluno progresso-quiz-novo">Ainda não respondido</p>
+      {% endif %}
+      <p class="texto-suave">{{ quiz.descricao|default:"Pratique o conteúdo e veja seu resultado ao concluir."|truncatechars:180 }}</p>
+      <div class="quiz-rodape">
+        <span>{{ quiz.total_questoes }} {% if quiz.total_questoes == 1 %}questão{% else %}questões{% endif %}</span>
+        <a class="botao" href="{% url 'responder_quiz' quiz.id %}">Começar quiz</a>
+      </div>
+    </article>
+  {% empty %}
+    <div class="cartao estado-vazio">
+      <h2>Nenhum quiz disponível ainda</h2>
+      <p>Quando a equipe publicar quizzes, eles aparecerão nesta área.</p>
+      <a class="botao botao-leve" href="{% url 'materias' %}">Voltar à biblioteca</a>
+    </div>
+  {% endfor %}
+</div>
+{% if tentativas %}
+<section class="historico-quizzes" aria-labelledby="historico-quizzes-titulo">
+  <div class="cabecalho-secao">
+    <div>
+      <p class="sobretitulo">SEU PROGRESSO</p>
+      <h2 id="historico-quizzes-titulo">Tentativas recentes</h2>
+    </div>
+  </div>
+  <div class="grade-historico-quizzes">
+    {% for tentativa in tentativas %}
+      <a class="cartao item-historico-quiz" href="{% url 'resultado_quiz' tentativa.id %}">
+        <span>{{ tentativa.quiz.materia.nome }}</span>
+        <strong>{{ tentativa.quiz.titulo }}</strong>
+        <small>{{ tentativa.acertos }}/{{ tentativa.total_questoes }} · {{ tentativa.percentual }}%</small>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

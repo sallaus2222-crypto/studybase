@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Minhas notas - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">{{ serie }}</p>
+    <h1>Minhas notas</h1>
+    <p class="texto-suave">Notas de provas, trabalhos, atividades e outras avaliações lançadas pelos seus professores.</p>
+  </div>
+</section>
+<div class="lista-assuntos-professor">
+  {% for nota in notas %}
+    <article class="cartao item-assunto-professor">
+      <div>
+        <p class="sobretitulo">{{ nota.materia.nome }} · {{ nota.get_tipo_display }} · {{ nota.data_avaliacao|date:"d/m/Y" }}</p>
+        <h2>{{ nota.titulo }}</h2>
+        <p class="nota-aluno-valor">{{ nota.nota|floatformat:"-2" }} <span>/ {{ nota.nota_maxima|floatformat:"-2" }}</span></p>
+        {% if nota.observacoes %}<p>{{ nota.observacoes }}</p>{% endif %}
+        <small class="texto-suave">Professor: {{ nota.professor.username }}</small>
+      </div>
+    </article>
+  {% empty %}
+    <div class="cartao estado-vazio">
+      <h2>Nenhuma nota lançada ainda</h2>
+      <p>Quando um professor registrar uma avaliação, ela aparecerá nesta página.</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

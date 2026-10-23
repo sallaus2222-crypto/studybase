@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Perguntas de estudo - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">COMUNIDADE DE ESTUDO · {{ user.perfil_aluno.get_serie_display }}</p>
+    <h1>Perguntas de estudo</h1>
+    <p class="texto-suave">Veja perguntas aprovadas de alunos da sua série. Perguntas e respostas só ficam visíveis para os colegas depois da aprovação de um professor.</p>
+  </div>
+</section>
+
+<section class="cartao cartao-form">
+  <h2>Faça uma pergunta</h2>
+  <p class="texto-suave">Não inclua seu nome completo, telefone, endereço, escola ou outras informações pessoais.</p>
+  <form method="post"{% if bloquear_colagem %} data-bloquear-colagem="true"{% endif %}>
+    {% csrf_token %}
+    {{ form.as_div }}
+    {% if bloquear_colagem %}<p class="texto-suave mensagem-bloqueio-colagem" role="status" aria-live="polite" hidden>Colar texto está desativado por uma configuração da escola.</p>{% endif %}
+    <button class="botao" type="submit">Enviar para moderação</button>
+  </form>
+</section>
+
+<section class="secao-ranking" aria-labelledby="perguntas-lista-titulo">
+  <h2 id="perguntas-lista-titulo">Perguntas da sua série</h2>
+  <div class="lista-assuntos-professor">
+    {% for pergunta in perguntas %}
+      <article class="cartao">
+        <p class="sobretitulo">{{ pergunta.materia.nome }} · {{ pergunta.get_serie_display }}</p>
+        <h3><a href="{% url 'pergunta_detalhe' pergunta.id %}">{{ pergunta.titulo }}</a></h3>
+        <p>{{ pergunta.texto|truncatechars:220 }}</p>
+        {% if pergunta.autor_id == user.id and pergunta.status != "aprovada" %}
+          <span class="etiqueta-status rascunho">{{ pergunta.get_status_display }}</span>
+        {% else %}
+          <span class="texto-suave">{{ pergunta.respostas_publicadas }} resposta(s) aprovada(s)</span>
+        {% endif %}
+        <p><a class="link-acao" href="{% url 'pergunta_detalhe' pergunta.id %}">Abrir discussão</a></p>
+      </article>
+    {% empty %}
+      <p class="cartao estado-vazio">Ainda não há perguntas publicadas para sua série. Você pode enviar a primeira.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

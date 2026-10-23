@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}Conquistas - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">SEU PROGRESSO</p>
+    <h1>Conquistas</h1>
+    <p class="texto-suave">Acompanhe metas de estudo configuradas pela equipe StudyVerse.</p>
+  </div>
+</section>
+
+<section class="grade-conquistas" aria-label="Suas conquistas">
+  {% for item in conquistas %}
+    <article class="cartao cartao-conquista{% if item.conquistada %} conquista-obtida{% endif %}">
+      <div class="conquista-cabecalho">
+        <h2>{{ item.conquista.nome }}</h2>
+        {% if item.conquistada %}<span class="etiqueta-status publicado">Conquistada</span>{% else %}<span class="etiqueta-status rascunho">Em andamento</span>{% endif %}
+      </div>
+      {% if item.conquista.descricao %}<p class="texto-suave">{{ item.conquista.descricao }}</p>{% endif %}
+      <p class="conquista-meta">
+        {% if item.conquista.criterio == "quizzes_concluidos" %}
+          Quizzes concluídos
+        {% elif item.conquista.criterio == "quizzes_perfeitos" %}
+          Quizzes com 100% de acerto
+        {% else %}
+          XP vitalício
+        {% endif %}
+      </p>
+      <progress max="100" value="{{ item.percentual }}" aria-label="{{ item.percentual }}% concluído">{{ item.percentual }}%</progress>
+      <small>{{ item.progresso }} / {{ item.conquista.meta }}</small>
+    </article>
+  {% empty %}
+    <p class="cartao estado-vazio">Ainda não há conquistas ativas. Elas aparecerão aqui quando forem configuradas.</p>
+  {% endfor %}
+</section>
+{% endblock %}
