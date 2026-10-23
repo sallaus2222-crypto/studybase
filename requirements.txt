@@ -1,0 +1,6 @@
+Django==6.1.2
+Pillow==13.0.0
+dj-database-url>=2.3,<4
+psycopg[binary]>=3.2,<4
+waitress>=3,<4
+whitenoise>=6.8,<7
