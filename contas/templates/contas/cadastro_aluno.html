@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Cadastro - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="cartao cartao-form">
+  <h1>Criar conta de aluno</h1>
+  <p class="aviso"><strong>Aviso:</strong> a escola é responsável pelo cadastro do aluno menor de idade. Ao marcar a caixa de confirmação, você declara que a escola autorizou este cadastro.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button class="botao" type="submit">Criar conta</button>
+  </form>
+  <p class="rodape-form">Já tem conta? <a href="{% url 'login' %}">Entrar</a></p>
+  <p class="rodape-form">É professor? <a href="{% url 'cadastro_professor' %}">Cadastre-se aqui</a></p>
+</section>
+{% endblock %}

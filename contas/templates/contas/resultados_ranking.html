@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titulo %}Resultados dos rankings - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">HISTÓRICO</p>
+    <h1>Resultados dos rankings</h1>
+    <p class="texto-suave">Resultados registrados quando um período foi encerrado. São exibidos os apelidos escolhidos pelos participantes.</p>
+  </div>
+</section>
+
+{% for item in periodos_resultado %}
+  <section class="secao-ranking">
+    <h2>{{ item.periodo.get_tipo_display }} {{ item.periodo.chave }}</h2>
+    <div class="grade-materias">
+      {% for resultado in item.categorias.fundamental %}
+        {% if forloop.first %}<section class="cartao"><h3>Fundamental</h3><ol class="lista-ranking">{% endif %}
+        <li class="linha-ranking"><span class="ranking-posicao">{{ resultado.posicao }}º</span><strong>{{ resultado.apelido }}</strong><span>{{ resultado.xp }} XP</span></li>
+        {% if forloop.last %}</ol></section>{% endif %}
+      {% empty %}<section class="cartao"><h3>Fundamental</h3><p>Nenhum participante registrado.</p></section>
+      {% endfor %}
+      {% for resultado in item.categorias.medio %}
+        {% if forloop.first %}<section class="cartao"><h3>Médio</h3><ol class="lista-ranking">{% endif %}
+        <li class="linha-ranking"><span class="ranking-posicao">{{ resultado.posicao }}º</span><strong>{{ resultado.apelido }}</strong><span>{{ resultado.xp }} XP</span></li>
+        {% if forloop.last %}</ol></section>{% endif %}
+      {% empty %}<section class="cartao"><h3>Médio</h3><p>Nenhum participante registrado.</p></section>
+      {% endfor %}
+      {% for resultado in item.categorias.global %}
+        {% if forloop.first %}<section class="cartao"><h3>Global</h3><ol class="lista-ranking">{% endif %}
+        <li class="linha-ranking"><span class="ranking-posicao">{{ resultado.posicao }}º</span><strong>{{ resultado.apelido }}</strong><span>{{ resultado.xp }} XP</span></li>
+        {% if forloop.last %}</ol></section>{% endif %}
+      {% empty %}<section class="cartao"><h3>Global</h3><p>Nenhum participante registrado.</p></section>
+      {% endfor %}
+    </div>
+  </section>
+{% empty %}
+  <p class="cartao estado-vazio">Ainda não há resultados de períodos encerrados.</p>
+{% endfor %}
+{% endblock %}

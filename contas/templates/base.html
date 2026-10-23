@@ -1,0 +1,68 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}StudyVerse{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'contas/css/studyverse.css' %}?v=20261021-agenda-comentarios">
+  <script defer src="{% static 'contas/js/bloqueio_colagem.js' %}"></script>
+</head>
+<body>
+  <a class="pular-conteudo" href="#conteudo-principal">Pular para o conteudo</a>
+  <header class="topo">
+    <a class="marca" href="{% url 'inicio' %}">Study<span>Verse</span></a>
+    {% if user.is_authenticated %}
+    <nav class="menu" aria-label="Navegação principal">
+      <a class="{% if request.resolver_match.url_name == 'inicio' %}ativo{% endif %}" href="{% url 'inicio' %}">Início</a>
+      <a class="{% if request.resolver_match.url_name == 'materias' or request.resolver_match.url_name == 'materia' %}ativo{% endif %}" href="{% url 'materias' %}">Matérias</a>
+      <a class="{% if request.resolver_match.url_name == 'calendario' %}ativo{% endif %}" href="{% url 'calendario' %}">Calendario</a>
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'notificacoes' or request.resolver_match.url_name == 'notificacao_abrir' %}ativo{% endif %}" href="{% url 'notificacoes' %}">NotificaÃ§Ãµes{% if notificacoes_nao_lidas %} <span class="contador-notificacoes">{{ notificacoes_nao_lidas }}</span>{% endif %}</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'quizzes' or request.resolver_match.url_name == 'responder_quiz' or request.resolver_match.url_name == 'resultado_quiz' %}ativo{% endif %}" href="{% url 'quizzes' %}">Quizzes</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'minhas_notas' %}ativo{% endif %}" href="{% url 'minhas_notas' %}">Minhas notas</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'arena' or request.resolver_match.url_name == 'arena_desafio' %}ativo{% endif %}" href="{% url 'arena' %}">Quiz Arena</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'perguntas' or request.resolver_match.url_name == 'pergunta_detalhe' %}ativo{% endif %}" href="{% url 'perguntas' %}">Perguntas</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'minhas_marcacoes' %}ativo{% endif %}" href="{% url 'minhas_marcacoes' %}">Minhas marcações</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'ranking' or request.resolver_match.url_name == 'resultados_ranking' %}ativo{% endif %}" href="{% url 'ranking' %}">Ranking</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'conquistas' %}ativo{% endif %}" href="{% url 'conquistas' %}">Conquistas</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'missoes' %}ativo{% endif %}" href="{% url 'missoes' %}">Missões</a>{% endif %}
+      {% if user.papel == 'aluno' %}<a class="{% if request.resolver_match.url_name == 'perfil' %}ativo{% endif %}" href="{% url 'perfil' %}">Meu perfil</a>{% endif %}
+      {% if user.papel == 'professor' %}<a class="{% if request.resolver_match.url_name == 'painel_professor' %}ativo{% endif %}" href="{% url 'painel_professor' %}">Painel do professor</a>{% endif %}
+      {% if user.papel == 'professor' %}<a class="{% if request.resolver_match.url_name == 'caderneta_professor' %}ativo{% endif %}" href="{% url 'caderneta_professor' %}">Caderneta</a>{% endif %}
+      {% if user.papel == 'professor' %}<a class="{% if request.resolver_match.url_name == 'configuracao_colagem_professor' %}ativo{% endif %}" href="{% url 'configuracao_colagem_professor' %}">Configurações</a>{% endif %}
+      {% if user.papel == 'admin' or user.is_superuser %}<a class="{% if request.resolver_match.url_name == 'configuracao_colagem_admin' %}ativo{% endif %}" href="{% url 'configuracao_colagem_admin' %}">Configurações</a>{% endif %}
+    </nav>
+    <div class="usuario">
+      {% if user.papel == "aluno" %}
+        {% if user.perfil_aluno.foto %}
+          <img class="avatar imagem-avatar" src="{% url 'foto_perfil' user.id %}" alt="Foto de perfil de {{ user.perfil_aluno.nome_exibicao|default:user.username }}">
+        {% else %}
+          <span class="avatar avatar-{{ user.perfil_aluno.avatar }}" aria-hidden="true">{{ user.perfil_aluno.nome_exibicao|default:user.username|slice:":1"|upper }}</span>
+        {% endif %}
+      {% else %}
+        <span class="avatar" aria-hidden="true">{{ user.username|slice:":1"|upper }}</span>
+      {% endif %}
+      <div class="usuario-info">
+        {% if user.papel == "aluno" %}
+          <strong>{{ user.perfil_aluno.nome_exibicao|default:user.username }}</strong>
+        {% else %}
+          <strong>{{ user.username }}</strong>
+        {% endif %}
+        {% if user.papel == "aluno" %}
+          <small>{{ user.perfil_aluno.get_serie_display|default:"Aluno" }}</small>
+        {% elif user.papel == "professor" %}
+          <small>Professor</small>
+        {% else %}
+          <small>Administrador</small>
+        {% endif %}
+      </div>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="botao botao-leve" type="submit">Sair</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+  <main class="conteudo" id="conteudo-principal" tabindex="-1">{% block conteudo %}{% endblock %}</main>
+</body>
+</html>

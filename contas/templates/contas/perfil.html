@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Meu perfil - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="cartao cartao-form perfil-formulario">
+  <p class="sobretitulo">SUA CONTA</p>
+  <h1>Meu perfil</h1>
+  <p class="texto-suave">Personalize como você aparece no StudyVerse. Seu nome de usuário continua sendo usado para entrar.</p>
+  <p class="texto-suave">Nos rankings Fundamental, Médio e Global, apenas seu apelido público e seu XP do período são exibidos. Você pode sair dos rankings quando quiser.</p>
+
+  <div class="perfil-previa">
+    {% if form.instance.foto %}
+      <img class="avatar imagem-avatar" src="{% url 'foto_perfil' user.id %}" alt="Sua foto de perfil">
+    {% else %}
+      <span class="avatar avatar-{{ form.instance.avatar }}" aria-hidden="true">{{ form.instance.nome_exibicao|default:user.username|slice:":1"|upper }}</span>
+    {% endif %}
+    <div>
+      <strong>{{ form.instance.nome_exibicao|default:user.username }}</strong>
+      <small>{{ form.instance.get_serie_display }}</small>
+      {% if form.initial.titulo_ativo %}<small class="titulo-perfil">{{ form.initial.titulo_ativo.titulo.nome }}</small>{% endif %}
+    </div>
+  </div>
+  {% if form.instance.imagem_fundo %}
+    <div class="fundo-perfil-previa">
+      <strong>Imagem de fundo atual</strong>
+      <img src="{% url 'imagem_fundo_perfil' %}" alt="Prévia da imagem de fundo da página inicial">
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <div class="acoes-formulario">
+      <button class="botao" type="submit">Salvar perfil</button>
+      <a class="botao botao-leve" href="{% url 'inicio' %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

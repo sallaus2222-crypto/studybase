@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block titulo %}Início - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="cartao-boas-vindas"{% if user.papel == "aluno" and user.perfil_aluno.imagem_fundo %} style="--imagem-fundo: url('{% url 'imagem_fundo_perfil' %}')"{% endif %}>
+  <div>
+    <p class="sobretitulo">SEU ESPAÇO DE APRENDIZAGEM</p>
+    <h1>Olá, {{ user.first_name|default:user.username }}.</h1>
+    {% if user.papel == "aluno" %}
+      {% if titulo_ativo %}<p class="titulo-boas-vindas">{{ titulo_ativo.titulo.nome }}</p>{% endif %}
+      <p class="texto-suave">Continue explorando conteúdos e aprendendo no seu ritmo.</p>
+    {% elif user.papel == "professor" %}
+      <p class="texto-suave">Prepare e organize conteúdos para seus alunos.</p>
+    {% else %}
+      <p class="texto-suave">Acesse as áreas de conteúdo e administração do StudyVerse.</p>
+    {% endif %}
+  </div>
+  {% if user.papel == "professor" %}
+    <a class="botao" href="{% url 'painel_professor' %}">Abrir painel do professor</a>
+  {% else %}
+    <a class="botao" href="{% url 'materias' %}">Explorar matérias</a>
+  {% endif %}
+</section>
+
+{% if user.papel == "aluno" %}
+<section class="cartao resumo-aluno" aria-label="Informações do aluno">
+  {% if user.perfil_aluno.foto %}
+    <img class="resumo-avatar imagem-avatar" src="{% url 'foto_perfil' user.id %}" alt="Foto do perfil">
+  {% else %}
+    <div class="resumo-avatar avatar-{{ user.perfil_aluno.avatar }}" aria-hidden="true">{{ user.perfil_aluno.nome_exibicao|default:user.username|slice:":1"|upper }}</div>
+  {% endif %}
+  <div>
+    <p class="sobretitulo">SUA SÉRIE</p>
+    <h2>{{ user.perfil_aluno.get_serie_display|default:"Série não informada" }}</h2>
+    {% if titulo_ativo %}<p class="titulo-perfil">{{ titulo_ativo.titulo.nome }}</p>{% endif %}
+  </div>
+  <a class="link-acao" href="{% url 'perfil' %}">Editar perfil</a>
+</section>
+{% endif %}
+
+{% if progresso_xp %}
+<section class="painel-xp" aria-labelledby="progresso-xp-titulo">
+  <div class="cabecalho-secao">
+    <div>
+      <p class="sobretitulo">SUA PROGRESSÃO</p>
+      <h2 id="progresso-xp-titulo">Experiência</h2>
+    </div>
+    <a class="link-acao" href="{% url 'ranking' %}">Ver rankings</a>
+  </div>
+  <div class="grade-xp">
+    <article class="cartao cartao-xp">
+      <span>Temporada {{ progresso_xp.temporada.chave }}</span>
+      <strong>{{ progresso_xp.xp_temporada }} <small>XP</small></strong>
+      <small>Reinicia a cada mês</small>
+    </article>
+    <article class="cartao cartao-xp">
+      <span>Ano {{ progresso_xp.periodo_anual.chave }}</span>
+      <strong>{{ progresso_xp.xp_anual }} <small>XP</small></strong>
+      <small>Histórico anual preservado</small>
+    </article>
+    <article class="cartao cartao-xp">
+      <span>XP vitalício</span>
+      <strong>{{ progresso_xp.xp_vitalicio }} <small>XP</small></strong>
+      <small>Experiência validada</small>
+    </article>
+  </div>
+  {% if progresso_patente %}
+    <article class="cartao painel-patente" aria-label="Progressão de patente">
+      <div>
+        <p class="sobretitulo">PATENTE VITALÍCIA</p>
+        {% if progresso_patente.atual %}
+          <h3>{{ progresso_patente.atual.nome }}</h3>
+          {% if progresso_patente.atual.descricao %}<p>{{ progresso_patente.atual.descricao }}</p>{% endif %}
+        {% else %}
+          <h3>Sem patente ainda</h3>
+        {% endif %}
+        {% if progresso_patente.proxima %}
+          <p>Próxima: <strong>{{ progresso_patente.proxima.nome }}</strong> · faltam {{ progresso_patente.xp_restante }} XP</p>
+          <progress max="100" value="{{ progresso_patente.percentual }}" aria-label="{{ progresso_patente.percentual }}% até a próxima patente">{{ progresso_patente.percentual }}%</progress>
+        {% else %}
+          <p>Você alcançou a maior patente ativa.</p>
+        {% endif %}
+      </div>
+    </article>
+  {% else %}
+    <p class="cartao estado-patentes">As patentes ainda não foram configuradas.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if user.papel == "aluno" %}
+<section class="secao-missoes-resumo" aria-labelledby="missoes-resumo-titulo">
+  <div class="cabecalho-secao">
+    <h2 id="missoes-resumo-titulo">Missões ativas</h2>
+    <a class="link-acao" href="{% url 'missoes' %}">Ver todas</a>
+  </div>
+  {% if missoes_ativas %}
+    <div class="grade-resumo-missoes">
+      {% for item in missoes_ativas %}
+        <article class="cartao resumo-missao">
+          <strong>{{ item.missao.nome }}</strong>
+          <span>{{ item.progresso }} / {{ item.missao.meta }}</span>
+          <progress max="100" value="{{ item.percentual }}" aria-label="{{ item.percentual }}% concluído">{{ item.percentual }}%</progress>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="cartao estado-vazio">Não há missões ativas no momento.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="secao-destaques" aria-labelledby="destaques-titulo">
+  <div class="cabecalho-secao">
+    <div>
+      <p class="sobretitulo">COMECE POR AQUI</p>
+      <h2 id="destaques-titulo">Matérias em destaque</h2>
+    </div>
+    <a class="link-acao" href="{% url 'materias' %}">Ver todas as matérias</a>
+  </div>
+  {% if materias_destaque %}
+    <div class="grade">
+      {% for materia in materias_destaque %}
+        <article class="cartao materia" style="--cor-materia: {{ materia.cor }};">
+          <h3><a href="{% url 'materia' materia.id %}">{{ materia.nome }}</a></h3>
+          <p>{{ materia.descricao|default:"Explore os assuntos desta matéria." }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="cartao estado-vazio">As matérias em destaque aparecerão aqui quando forem cadastradas.</p>
+  {% endif %}
+</section>
+{% endblock %}

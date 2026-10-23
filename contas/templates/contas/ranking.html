@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block titulo %}Ranking {{ categoria_label }} - StudyVerse{% endblock %}
+{% block conteudo %}
+<section class="pagina-cabecalho">
+  <div>
+    <p class="sobretitulo">{{ periodo_label|upper }} · {{ periodo.chave }}</p>
+    <h1>Ranking {{ categoria_label }}</h1>
+    <p class="texto-suave">Classificação pelo XP validado. Só aparecem alunos que ativaram a participação; o ranking mostra apenas o apelido escolhido.</p>
+  </div>
+</section>
+
+<form class="cartao" method="get" aria-label="Filtros do ranking">
+  <label for="ranking-categoria">Categoria</label>
+  <select id="ranking-categoria" name="categoria">
+    <option value="fundamental"{% if categoria == "fundamental" %} selected{% endif %}>Fundamental</option>
+    <option value="medio"{% if categoria == "medio" %} selected{% endif %}>Médio</option>
+    <option value="global"{% if categoria == "global" %} selected{% endif %}>Global</option>
+  </select>
+  <label for="ranking-periodo">Período</label>
+  <select id="ranking-periodo" name="periodo">
+    <option value="temporada"{% if periodo_tipo == "temporada" %} selected{% endif %}>Temporada mensal</option>
+    <option value="anual"{% if periodo_tipo == "anual" %} selected{% endif %}>Ano atual</option>
+  </select>
+  <button class="botao" type="submit">Atualizar ranking</button>
+</form>
+<p><a class="link-acao" href="{% url 'resultados_ranking' %}">Ver resultados de períodos encerrados</a></p>
+
+{% if participa_ranking %}
+  <section class="cartao ranking-resumo" aria-label="Sua colocação">
+    {% if posicao_usuario %}
+      <p>Você está na <strong>{{ posicao_usuario }}ª posição</strong> com <strong>{{ xp_pontuacao }} XP</strong>.</p>
+    {% else %}
+      <p>Você ainda não ganhou XP neste período. Sua posição começa junto aos demais participantes.</p>
+    {% endif %}
+    <p class="texto-suave">Participantes: {{ total_participantes }}.</p>
+  </section>
+{% else %}
+  <section class="cartao ranking-resumo">
+    <h2>Você está fora do ranking</h2>
+    <p>Se quiser participar, abra seu perfil, escolha um apelido e ative a participação. Ela começa desativada e pode ser desligada a qualquer momento.</p>
+    <a class="botao" href="{% url 'perfil' %}">Configurar participação</a>
+  </section>
+{% endif %}
+
+<section class="secao-ranking" aria-labelledby="ranking-lista-titulo">
+  <h2 id="ranking-lista-titulo">Classificação</h2>
+  {% if ranking %}
+    <ol class="lista-ranking">
+      {% for linha in ranking %}
+        <li class="cartao linha-ranking{% if linha.usuario_id == user.id %} ranking-proprio{% endif %}">
+          <span class="ranking-posicao">{{ linha.posicao }}º</span>
+          <strong>{{ linha.apelido_ranking }}</strong>
+          <span>{{ linha.xp }} XP</span>
+        </li>
+      {% endfor %}
+    </ol>
+    {% if total_participantes > 50 %}<p class="texto-suave">Exibindo os 50 primeiros participantes.</p>{% endif %}
+  {% else %}
+    <p class="cartao estado-vazio">Ainda não há participantes nesta categoria.</p>
+  {% endif %}
+</section>
+{% endblock %}
